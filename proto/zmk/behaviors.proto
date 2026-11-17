@@ -6,6 +6,8 @@ message Request {
     oneof request_type {
         bool list_all_behaviors = 1;
         GetBehaviorDetailsRequest get_behavior_details = 2;
+        GetBehaviorSettingsRequest get_behavior_settings = 3;
+        SetBehaviorSettingRequest set_behavior_setting = 4;
     }
 }
 
@@ -17,6 +19,8 @@ message Response {
     oneof response_type {
         ListAllBehaviorsResponse list_all_behaviors = 1;
         GetBehaviorDetailsResponse get_behavior_details = 2;
+        GetBehaviorSettingsResponse get_behavior_settings = 3;
+        SetBehaviorSettingResponse set_behavior_setting = 4;
     }
 }
 
@@ -57,4 +61,58 @@ message BehaviorParameterValueDescription {
         BehaviorParameterHidUsage hid_usage = 5;
         BehaviorParameterLayerId layer_id = 6;
     }
+}
+
+// Runtime settings of a behavior instance, such as the tapping term of a hold-tap.
+// Values set here take effect right away. They are written to flash, or reverted,
+// by the keymap subsystem's save_changes and discard_changes requests, and count
+// towards its check_unsaved_changes.
+
+message GetBehaviorSettingsRequest {
+    uint32 behavior_id = 1;
+}
+
+message GetBehaviorSettingsResponse {
+    uint32 behavior_id = 1;
+    repeated BehaviorSetting settings = 2;
+}
+
+message BehaviorSetting {
+    uint32 id = 1;
+    string name = 2;
+    int32 value = 3;
+    int32 default_value = 4;
+
+    oneof value_type {
+        BehaviorSettingRange range = 5;
+        BehaviorSettingOptions options = 6;
+        BehaviorSettingToggle toggle = 7;
+    }
+}
+
+message BehaviorSettingRange {
+    int32 min = 1;
+    int32 max = 2;
+    string unit = 3;
+}
+
+// The value is the index of the chosen option.
+message BehaviorSettingOptions {
+    repeated string options = 1;
+}
+
+// The value is 0 or 1.
+message BehaviorSettingToggle {}
+
+message SetBehaviorSettingRequest {
+    uint32 behavior_id = 1;
+    uint32 setting_id = 2;
+    int32 value = 3;
+}
+
+enum SetBehaviorSettingResponse {
+    SET_BEHAVIOR_SETTING_RESP_OK = 0;
+    SET_BEHAVIOR_SETTING_RESP_INVALID_BEHAVIOR = 1;
+    SET_BEHAVIOR_SETTING_RESP_INVALID_SETTING = 2;
+    SET_BEHAVIOR_SETTING_RESP_INVALID_VALUE = 3;
 }
